@@ -82,3 +82,6 @@ def exibir_extrato():
     print("="*50)
 
 menu()
+
+# va
+

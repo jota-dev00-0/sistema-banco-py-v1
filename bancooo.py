@@ -1,11 +1,15 @@
+from datetime import datetime
+
 saldo = 0
 limite_saque_diario = 500
 saques = 0
 LIMITE_SAQUE = 3
 extrato = ""
-
+LIMITE_TRANSACOES_DIARIAS = 10
+transacoes_hoje = 0
+depositos = 0
     
-def menu ():
+def menu():
     while True:
         option = input("""
     [d] Depositar
@@ -22,57 +26,59 @@ def menu ():
                 exibir_extrato()
             case "q":
                 break
-    
-
-
         
 def depositar():
-    valor = float(input("digite o valor que deseja depositar")) 
-    global saldo, extrato
+    global saldo, extrato, transacoes_hoje, depositos
+    
+    if transacoes_hoje >= LIMITE_TRANSACOES_DIARIAS:
+        print("Limite diário de transações atingido (10 transações).")
+        return
+        
+    valor = float(input("Digite o valor que deseja depositar: ")) 
+    
     if valor > 0:    
         saldo += valor
-        extrato += f"\ndeposito feito no valor de {valor:.2f}"
-        print(f"saldo atual: {saldo}")
-        
-        
+        data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        extrato += f"\n{data_hora} - Depósito: R$ {valor:.2f}"
+        transacoes_hoje += 1
+        depositos += 1
+        print(f"Saldo atual: R$ {saldo:.2f}")
     else:
-        print("digite um valor maior que zero por favor ")
-        
+        print("Digite um valor maior que zero por favor.")
 
-def sacar ():
-    valor = float(input("digite o valor que deseja sacar"))
+def sacar():
+    global saldo, extrato, saques, transacoes_hoje
     
-    global saldo, extrato, saques
+    if transacoes_hoje >= LIMITE_TRANSACOES_DIARIAS:
+        print("Limite diário de transações atingido (10 transações).")
+        return
+        
+    valor = float(input("Digite o valor que deseja sacar: "))
     
     excedeu_saldo = valor > saldo
     excedeu_limite = valor > limite_saque_diario
     excedeu_saques = saques >= LIMITE_SAQUE
     
     if excedeu_saldo:
-        print("sua transacao passa o limite")
-        
+        print("Saldo insuficiente.")
     elif excedeu_saques:
-        print("limite de saques atingidos")
-        
+        print("Limite diário de saques atingido (3 saques).")
     elif excedeu_limite:
-        print("limite de valor de saque atingido")
-    
+        print(f"Valor máximo por saque: R$ {limite_saque_diario:.2f}")
     elif valor <= 0:
-        print("digite um valor ")
-    
-    if(valor > 0 and not excedeu_limite):
-        saldo -= valor
-        extrato += f"\nsaque efetuado no valor de {valor:.2f}"
-        saques += 1
-        print(f"saldo atual: {saldo:.2f}")
-        
+        print("Digite um valor positivo.")
     else:
-        print("operacao falhou!")
-        
-def exibir_extrato ():
-    print("======Extrato======")
-    print("nao foram realizadas movimentacoes" if not extrato else extrato)
-    print(f"\nsaldo atual {saldo:.2f}R$")
-    
+        saldo -= valor
+        data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        extrato += f"\n{data_hora} - Saque: R$ {valor:.2f}"
+        saques += 1
+        transacoes_hoje += 1
+        print(f"Saque realizado. Saldo atual: R$ {saldo:.2f}")
+
+def exibir_extrato():
+    print("\n" + "="*20 + " EXTRATO " + "="*20)
+    print("Não foram realizadas movimentações." if not extrato else extrato)
+    print(f"\nSaldo atual: R$ {saldo:.2f}")
+    print("="*50)
 
 menu()
